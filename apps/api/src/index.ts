@@ -2,8 +2,9 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
-import { mockAuth } from './lib/auth-middleware';
+import { authContext } from './lib/auth-middleware';
 import { HttpError } from './lib/errors';
+import authRoutes from './routes/auth';
 import lotsRoutes from './routes/lots';
 import operationsRoutes from './routes/operations';
 import certificatesRoutes from './routes/certificates';
@@ -14,15 +15,18 @@ dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
+const uploadsDir = path.resolve(process.cwd(), '../../uploads');
 
 app.use(cors());
 app.use(express.json());
-app.use(mockAuth);
+app.use('/uploads', express.static(uploadsDir));
+app.use(authContext);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'circulartec-api' });
 });
 
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/lots', lotsRoutes);
 app.use('/api/v1/operations', operationsRoutes);
 app.use('/api/v1/certificates', certificatesRoutes);

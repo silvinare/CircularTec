@@ -32,21 +32,29 @@ Herramienta para gestionar recoleccion de residuos y su posterior aprovechamient
 - Web: `npm run dev:web`
 
 ## Endpoints clave (MVP)
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
 - `POST /api/v1/lots`
 - `GET /api/v1/lots`
 - `POST /api/v1/lots/:id/assign`
 - `POST /api/v1/operations/:lotId/collect`
 - `POST /api/v1/operations/:operationId/evidences`
+- `POST /api/v1/operations/:operationId/evidences/upload` (multipart file)
 - `POST /api/v1/operations/:lotId/close`
 - `GET /api/v1/certificates/verify/:publicCode`
 
 ## Notas MVP
-- Autenticacion actual: mock via headers (`x-user-id`, `x-role`, `x-organization-id`).
+- Autenticacion JWT habilitada (`/auth/login`).
+- Evidencias con upload local habilitadas (`/uploads/*`), persistidas en disco en la carpeta `uploads/`.
 - Blockchain actual: anclaje simulado (`mock_tx_*`) para validar el flujo.
-- Siguiente paso: reemplazar mock auth y mock blockchain por implementaciones reales.
+- Siguiente paso: conectar blockchain real.
 
 ## Flujo UI demo
 - En `http://localhost:3000` tenes una seccion **Operacion Piloto (demo)**.
+- Credenciales demo (password para todos: `demo1234`):
+  - `admin@circulartec.local`
+  - `generador@circulartec.local`
+  - `recolector@circulartec.local`
 - Permite ejecutar el flujo completo desde la UI:
   1. Crear lote (generador demo).
   2. Asignar lote (recolector demo).

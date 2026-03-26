@@ -103,6 +103,25 @@ button {
   height: 42px;
 }
 
+.flow-auth {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 14px;
+  flex-wrap: wrap;
+}
+
+.session-card {
+  background: #f6fbff;
+  border: 1px solid #dbe8f3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.session-card p {
+  margin: 6px 0 0;
+}
+
 .feedback {
   margin: 10px 0;
   padding: 8px 10px;
@@ -142,6 +161,24 @@ button {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.op-detail {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.op-detail p {
+  margin: 6px 0;
+}
+
+.op-detail ul {
+  margin: 4px 0 0 18px;
+}
+
+.op-detail a {
+  color: #0d4a8a;
 }
 
 .codes {
