@@ -1,0 +1,153 @@
+:root {
+  --bg: #f2f5f7;
+  --ink: #1f2933;
+  --panel: #ffffff;
+  --brand: #0f4c5c;
+  --brand-2: #2f855a;
+  --muted: #6b7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 10% 10%, #d9e8ef 0%, var(--bg) 38%, #ebf3ee 100%);
+  color: var(--ink);
+}
+
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.hero {
+  background: linear-gradient(140deg, var(--brand), #266b88 55%, var(--brand-2));
+  color: #f8fafc;
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 16px 34px rgba(15, 76, 92, 0.3);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid #dde4ea;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.card small {
+  color: var(--muted);
+}
+
+.verify {
+  margin-top: 20px;
+  background: var(--panel);
+  border: 1px solid #dde4ea;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #cfd6dd;
+  margin: 8px 0 12px;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #cfd6dd;
+  margin: 8px 0 12px;
+  background: #fff;
+}
+
+button {
+  border: 0;
+  background: var(--brand);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.flow {
+  margin-top: 20px;
+  background: var(--panel);
+  border: 1px solid #dde4ea;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.flow-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.flow-form button {
+  height: 42px;
+}
+
+.feedback {
+  margin: 10px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.feedback.ok {
+  color: #0f5132;
+  background: #d1e7dd;
+}
+
+.feedback.error {
+  color: #842029;
+  background: #f8d7da;
+}
+
+.flow-list {
+  margin-top: 12px;
+}
+
+.flow-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flow-item p {
+  margin: 4px 0 0;
+}
+
+.flow-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.codes {
+  margin-top: 12px;
+}
+
+.codes ul {
+  margin: 8px 0 0;
+}

@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>CircularTec &mdash; Infraestructura digital para convertir residuos en oportunidades</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 2rem 1.5rem 4rem;
+      line-height: 1.6;
+      background: #F5F7FA;
+      color: #1F2933;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 14px;
+      padding: 2rem 2.5rem 2.25rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+      border: 1px solid #EEF0F3;
+    }
+    h1, h2, h3 {
+      font-weight: 650;
+      color: #0F172A;
+    }
+    h1 {
+      font-size: 1.9rem;
+      margin: 0 0 0.25rem;
+    }
+    h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.25rem;
+    }
+    h3 {
+      margin-top: 1.15rem;
+      font-size: 1.05rem;
+    }
+    p {
+      margin: 0.2rem 0 0.8rem;
+    }
+    ul {
+      margin: 0.2rem 0 0.8rem 1.15rem;
+    }
+    .tagline {
+      font-size: 0.95rem;
+      color: #E4EDF5;
+      margin: 0.2rem 0 0;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin: 1.35rem 0 1.6rem;
+    }
+    .tab-button {
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 0.8rem 0.95rem;
+      text-align: center;
+      font-weight: 650;
+      font-size: 1rem;
+      color: #1F2933;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1 1 calc((100% - 3 * 0.65rem) / 4);
+    }
+    .tab-button:nth-child(n+5) {
+      flex: 1 1 calc((100% - 4 * 0.65rem) / 5);
+    }
+    .tab-button:nth-child(n+9) {
+      flex: 1 1 calc((100% - 5 * 0.65rem) / 6);
+    }
+    .tab-button:hover {
+      border-color: #2A6F97;
+      color: #0F4C5C;
+      box-shadow: 0 6px 16px rgba(42,111,151,0.12);
+    }
+    .tab-button.active {
+      background: linear-gradient(135deg, #0F4C5C, #2F855A);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 10px 24px rgba(15,76,92,0.25);
+    }
+    .panels {
+      margin-top: 0.5rem;
+    }
+    .tab-panel {
+      display: none;
+      animation: fadeIn 140ms ease-in;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pill {
+      display: inline-block;
+      padding: 0.1rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      margin-right: 0.3rem;
+    }
+    .todo {
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      padding: 0.6rem 0.75rem;
+      margin: 0.6rem 0 0.9rem;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+    .section-meta {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0 1.25rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+    }
+    .diagram-system {
+      margin: 1.5rem 0 2rem;
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px;
+      background: #F8FAFC;
+      border: 1px solid #D5DDE6;
+      font-size: 0.9rem;
+    }
+    .diagram-system h4 {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .diagram-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .diagram-box {
+      min-width: 140px;
+      max-width: 190px;
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .diagram-box strong {
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    .diagram-arrow {
+      font-size: 1.1rem;
+      color: #9ca3af;
+    }
+    .diagram-subrow {
+      margin-top: 0.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .diagram-caption {
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.4;
+    }
+    details {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 0.75rem 0.85rem;
+      margin: 0.65rem 0;
+    }
+    details[open] {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #0f172a;
+      outline: none;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "▾";
+      float: right;
+      color: #6b7280;
+      transition: transform 0.2s ease;
+    }
+    details[open] summary::after { transform: rotate(180deg); }
+    .subsection {
+      margin-top: 0.35rem;
+      padding-top: 0.25rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0F4C5C, #2A6F97);
+      border-radius: 16px;
+      padding: 2rem 2.25rem;
+      margin-bottom: 2rem;
+      color: #f9fafb;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .hero-logo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #2F855A, #0F4C5C);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 0.06em;
+    }
+    .hero-text h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+    }
+    .hero-text .tagline {
+      margin: 0.3rem 0 0.4rem;
+      font-size: 1.08rem;
+      color: #E4EDF5;
+    }
+    .hero-text .hero-sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #C9D6E6;
+    }
+    @media (max-width: 720px) {
+      body { padding: 1.5rem 1rem 3rem; }
+      main { padding: 1.5rem 1.25rem 1.75rem; }
+      .tabs { flex-direction: column; }
+      .tab-button,
+      .tab-button:nth-child(n+7) { flex: 1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+  <header class="hero">
+  <div class="hero-logo">
+    <span>CT</span>
+  </div>
+  <div class="hero-text">
+    <h1>CircularTec</h1>
+    <p class="tagline">
+      Infraestructura digital para convertir residuos en oportunidades.
+    </p>
+    <p class="hero-sub">
+      Plataforma tecnológica híbrida que integra trazabilidad, análisis de datos y
+      conocimiento científico para habilitar nuevos negocios circulares.
+    </p>
+  </div>
+</header>
+<p style="font-size:0.75rem; color:#9ca3af; margin-top:-1rem; margin-bottom:1.5rem;">
+Documento interno de trabajo &mdash; versión 0.2
+</p>
+
+    <nav class="tabs" role="tablist" aria-label="Navegación de secciones">
+      <button class="tab-button active" role="tab" aria-selected="true" data-tab="resumen">1. Resumen Ejecutivo</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="vision">2. Visión y Objetivos</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="diagnostico">3. Contexto y Oportunidad</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="propuesta">4. Sistema y Arquitectura</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="mvp">5. MVP y Piloto Inicial</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="flujos">6. Modelo Económico</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="modelo">7. Modelo de Negocio</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="gobernanza">8. Estrategia Institucional</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="proximos">9. Riesgos y Mitigación</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="hoja">10. Hoja de Ruta</button>
+      <button class="tab-button" role="tab" aria-selected="false" data-tab="equipo">11. Equipo</button>
+    </nav>
+
+    <div class="panels">
+      <section class="tab-panel active" role="tabpanel" data-tab="resumen">
+        <h2>1. Resumen Ejecutivo</h2>
+        <p>
+          La gestión de residuos reciclables en municipios intermedios presenta actualmente múltiples limitaciones:
+          baja trazabilidad, fragmentación entre actores, escasa integración de datos y ausencia de herramientas
+          que permitan transformar la información operativa en oportunidades concretas de desarrollo industrial.
+        </p>
+        <p>
+          Este documento presenta la propuesta de <strong>CircularTec</strong>, una infraestructura digital de economía circular
+          que articula generadores de residuos, recolectores/cooperativas, municipios e industria, integrando
+          gestión operativa, certificación digital verificable y análisis de valorización tecnológica.
+        </p>
+        <p>
+          La solución se estructura en cuatro componentes principales:
+        </p>
+        <ul>
+          <li><strong>Plataforma operativa de vinculación:</strong> permite publicar, tomar y registrar lotes de residuos de manera estructurada.</li>
+          <li><strong>Módulo de inteligencia y valorización:</strong> transforma los datos recopilados en información estratégica para identificar oportunidades industriales.</li>
+          <li><strong>Servicios tecnológicos especializados:</strong> orientados al desarrollo y validación de nuevas aplicaciones productivas basadas en residuos.</li>
+          <li><strong>Infraestructura de trazabilidad basada en blockchain:</strong> aplicada a los eventos críticos del sistema para garantizar inmutabilidad y auditabilidad de los certificados emitidos.</li>
+        </ul>
+        <p>
+          En su primera etapa, el proyecto se implementará mediante un piloto de 12 meses en un municipio intermedio, trabajando inicialmente con dos flujos de residuos estratégicos. Se prevé registrar entre
+          150 y 300 toneladas en el primer año, con al menos 200 operaciones certificadas digitalmente y la identificación de una oportunidad concreta de valorización industrial.
+        </p>
+        <p>
+          El modelo de negocio combina suscripción institucional, certificación digital y servicios tecnológicos de alto valor
+          agregado, configurando una estructura híbrida escalable a nivel regional.
+        </p>
+        <p>
+          Más que una plataforma de intermediación, el proyecto se posiciona como una infraestructura digital y tecnológica
+          para el desarrollo industrial basado en residuos, integrando trazabilidad, datos estratégicos y conocimiento
+          científico aplicado.
+        </p>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="vision">
+        <h2>2. Visión y Objetivos</h2>
+        <details>
+          <summary>2.1 Visión</summary>
+          <div class="subsection">
+            <p>
+              Consolidar a <strong>CircularTec</strong> como la infraestructura digital de referencia para 
+              <strong>convertir residuos en oportunidades</strong>, articulando tecnología, datos y conocimiento científico
+              aplicado para habilitar nuevos modelos de negocio, mejorar la gestión pública y fortalecer la
+              economía circular a nivel territorial.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>2.2 Propósito</summary>
+          <div class="subsection">
+            <p>Desarrollar y operar una plataforma tecnológica que:</p>
+            <ul>
+              <li>Organice y digitalice la gestión de residuos reciclables.</li>
+              <li>Genere trazabilidad y certificación confiable.</li>
+              <li>Transforme datos operativos en información estratégica.</li>
+              <li>Habilite el desarrollo de proyectos productivos basados en residuos.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>2.3 Objetivo general</summary>
+          <div class="subsection">
+            <p>
+              Diseñar, implementar y validar una plataforma digital de economía circular que conecte generadores de residuos,
+              recolectores/cooperativas, municipios e industria, integrando <strong>gestión operativa</strong>, 
+              <strong>trazabilidad verificable</strong> (incluyendo blockchain) y <strong>análisis de valorización tecnológica</strong>,
+              con el fin de transformar flujos de residuos en oportunidades concretas de desarrollo productivo.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>2.4 Objetivos específicos</summary>
+          <div class="subsection">
+            <ul>
+              <li>
+                <strong>Desarrollar el MVP de la plataforma:</strong> diseñar e implementar una primera versión funcional que permita
+                registrar generadores y recolectores/cooperativas, publicar y tomar lotes de residuos y registrar operaciones
+                básicas de retiro y gestión.
+              </li>
+              <li>
+                <strong>Incorporar trazabilidad y certificación digital:</strong> implementar un sistema de certificación digital de
+                operaciones, que incluya emisión de certificados por operación y registro de eventos críticos en blockchain
+                como respaldo de integridad.
+              </li>
+              <li>
+                <strong>Generar y estructurar datos territoriales de residuos:</strong> construir una base de datos que consolide
+                información sobre tipos de residuos, volúmenes, recurrencias, actores involucrados y localización.
+              </li>
+              <li>
+                <strong>Desarrollar un módulo de análisis y valorización tecnológica:</strong> utilizar los datos recopilados para
+                identificar flujos con masa crítica y potencial de valorización, elaborar al menos un informe técnico de
+                valorización en la etapa piloto y proponer oportunidades de desarrollo industrial basadas en residuos locales.
+              </li>
+              <li>
+                <strong>Validar el modelo en un piloto territorial:</strong> implementar el sistema en un municipio intermedio durante
+                12 meses, alcanzando metas de número de actores conectados, volumen de residuos trazados y cantidad de
+                operaciones certificadas digitalmente.
+              </li>
+              <li>
+                <strong>Definir un modelo de negocio escalable:</strong> diseñar y ajustar un modelo híbrido (SaaS + servicios
+                tecnológicos) que garantice sostenibilidad económica, sea replicable en otros municipios o territorios y permita
+                la incorporación futura de inversores y aliados.
+              </li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="diagnostico">
+        <h2>3. Contexto y Oportunidad</h2>
+        <p>
+          La gestión de residuos reciclables en municipios intermedios enfrenta desafíos estructurales que
+          limitan su eficiencia, transparencia y potencial de desarrollo productivo. En muchos territorios, los
+          flujos de residuos se gestionan de forma fragmentada, sin trazabilidad digital sistemática ni datos
+          estructurados que conecten la operación con estrategias industriales o certificaciones robustas.
+        </p>
+        <p>
+          Esto crea una brecha entre la generación del residuo, su gestión operativa, su valorización potencial
+          y su transformación en oportunidades económicas.
+        </p>
+
+        <details>
+          <summary>3.1 Fragmentación del sistema actual</summary>
+          <div class="subsection">
+            <p>
+              El ecosistema actual suele involucrar generadores, recolectores formales e informales, municipios,
+              plantas de reciclado e industria potencialmente interesada. Sin embargo:
+            </p>
+            <ul>
+              <li>No existe una infraestructura digital común.</li>
+              <li>La información no se centraliza ni estructura.</li>
+              <li>La trazabilidad depende de registros manuales o informales.</li>
+              <li>No se generan métricas comparables ni auditables.</li>
+            </ul>
+            <p>
+              La ausencia de datos consolidados limita la planificación pública, la toma de decisiones empresariales
+              y la generación de nuevos modelos de negocio.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>3.2 Oportunidad tecnológica</summary>
+          <div class="subsection">
+            <p>
+              El avance de tecnologías digitales permite hoy registrar operaciones en tiempo real, generar certificados
+              digitales verificables, estructurar bases de datos territoriales, aplicar análisis de información y 
+              utilizar blockchain como respaldo de integridad.
+            </p>
+            <p>
+              Sin embargo, en el ámbito de la economía circular territorial, estas herramientas aún no se encuentran integradas
+              en un sistema coherente y accesible para municipios y actores locales.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>3.3 Oportunidad de valorización productiva</summary>
+          <div class="subsection">
+            <p>
+              Más allá de la gestión, existe una oportunidad estratégica: transformar datos sobre residuos en insumos para
+              el desarrollo industrial. Cuando se dispone de información estructurada sobre tipo de residuo, volumen,
+              recurrencia, calidad y localización, es posible evaluar:
+            </p>
+            <ul>
+              <li>Viabilidad técnica de nuevos materiales.</li>
+              <li>Factibilidad económica de nuevas cadenas de valor.</li>
+              <li>Desarrollo de emprendimientos basados en recursos locales.</li>
+            </ul>
+            <p>
+              En este punto, la economía circular deja de ser un concepto exclusivamente ambiental y se convierte en una
+              estrategia de desarrollo productivo.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>3.4 Brecha actual</summary>
+          <div class="subsection">
+            <p>
+              Actualmente existe una desconexión entre gestión de residuos, tecnología digital, desarrollo industrial
+              y generación de oportunidades. Esta brecha constituye el espacio donde se inserta CircularTec.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>3.5 Síntesis de la oportunidad</summary>
+          <div class="subsection">
+            <p>
+              Existe una oportunidad clara de crear una infraestructura digital que organice la gestión, genere trazabilidad
+              confiable, produzca datos estructurados, habilite certificación verificable y active oportunidades de desarrollo
+              basadas en residuos. CircularTec nace para ocupar ese espacio.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="propuesta">
+        <h2>4. Sistema y Arquitectura</h2>
+        <p>
+          La propuesta se estructura como un sistema modular compuesto por cuatro componentes
+          complementarios que integran operación, inteligencia tecnológica, servicios especializados
+          e infraestructura de confianza.
+        </p>
+
+        <div class="diagram-system">
+          <h4>Esquema general del sistema</h4>
+
+          <!-- Fila principal: operación y certificación -->
+          <div class="diagram-row">
+            <div class="diagram-box">
+              <strong>Generadores</strong>
+              <span>Empresas, comercios, instituciones, municipio</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Plataforma operativa</strong>
+              <span>Publicación y toma de lotes, registro de operaciones</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Recolectores / cooperativas</strong>
+              <span>Retiro y gestión del residuo</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Certificado digital</strong>
+              <span>Comprobante de gestión emitido por operación</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Blockchain</strong>
+              <span>Registro inmutable de eventos críticos</span>
+            </div>
+          </div>
+
+          <!-- Fila secundaria: inteligencia y servicios -->
+          <div class="diagram-subrow">
+            <span class="diagram-arrow">⬇</span>
+            <div class="diagram-box">
+              <strong>Módulo de inteligencia</strong>
+              <span>Análisis de datos, identificación de oportunidades de valorización</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Servicios tecnológicos</strong>
+              <span>Estudios, prototipos, acompañamiento a nuevos negocios</span>
+            </div>
+          </div>
+
+          <p class="diagram-caption">
+            La capa operativa vincula generadores y recolectores, emitiendo certificados digitales.
+            Los datos de estas operaciones alimentan el módulo de inteligencia, y los eventos críticos
+            se respaldan en blockchain para asegurar trazabilidad y auditabilidad.
+          </p>
+        </div>
+
+        <div class="diagram-system">
+          <h4>Vista modular de la solución</h4>
+          <div class="diagram-row">
+            <div class="diagram-box">
+              <strong>Plataforma operativa</strong>
+              Vinculación y gestión de lotes
+            </div>
+            <div class="diagram-arrow">➜</div>
+            <div class="diagram-box">
+              <strong>Inteligencia y valorización</strong>
+              Datos → oportunidades
+            </div>
+            <div class="diagram-arrow">➜</div>
+            <div class="diagram-box">
+              <strong>Servicios tecnológicos</strong>
+              Validación y prototipado
+            </div>
+            <div class="diagram-arrow">➜</div>
+            <div class="diagram-box">
+              <strong>Blockchain</strong>
+              Trazabilidad y certificación
+            </div>
+          </div>
+          <div class="diagram-subrow">
+            <div class="diagram-box">
+              <strong>Actores</strong>
+              Generadores, recolectores, municipios, industria
+            </div>
+            <span class="diagram-arrow">⬆</span>
+            <div class="diagram-box">
+              <strong>Capas del sistema</strong>
+              Operación &bull; Datos &bull; Servicios &bull; Confianza
+            </div>
+          </div>
+        </div>
+
+        <details>
+          <summary>4.1 Plataforma operativa de vinculación</summary>
+          <div class="subsection">
+            <p><strong>Objetivo:</strong> Resolver el problema inmediato de coordinación, registro y trazabilidad básica de los flujos de residuos.</p>
+            <p><strong>Actores</strong></p>
+            <ul>
+              <li><strong>Generadores:</strong> registran su perfil, publican lotes de residuos, informan tipo, volumen estimado, frecuencia, ubicación y condiciones.</li>
+              <li><strong>Recolectores / cooperativas:</strong> registran zona de operación, tipos de residuos que gestionan, visualizan y toman lotes disponibles.</li>
+              <li><strong>Administración / municipio:</strong> accede a panel de control, visualiza volúmenes gestionados y monitorea actores activos y operaciones.</li>
+            </ul>
+            <p><strong>Flujo básico</strong></p>
+            <ul>
+              <li>El generador publica un lote.</li>
+              <li>La plataforma notifica recolectores habilitados.</li>
+              <li>Un recolector toma el lote.</li>
+              <li>Se coordina el retiro.</li>
+              <li>Se registran datos de operación (peso, fecha, fotos).</li>
+              <li>Se confirma la operación y se habilita certificación.</li>
+            </ul>
+            <p>Este módulo funciona con una base de datos tradicional que gestiona la información completa del sistema.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>4.2 Módulo de inteligencia y valorización tecnológica</summary>
+          <div class="subsection">
+            <p><strong>Objetivo:</strong> Transformar los datos operativos en información estratégica para el desarrollo productivo.</p>
+            <p><strong>Funciones:</strong></p>
+            <ul>
+              <li>Clasificación de residuos según volumen y recurrencia.</li>
+              <li>Análisis de calidad y potencial técnico.</li>
+              <li>Identificación de masa crítica suficiente para proyectos de valorización.</li>
+              <li>Evaluación preliminar de factibilidad técnica.</li>
+              <li>Generación de reportes estratégicos para municipios, industria y potenciales emprendedores.</li>
+            </ul>
+            <p>
+              A diferencia de una simple plataforma de intermediación, este módulo convierte la información en insumo para el
+              desarrollo de nuevos materiales, procesos y modelos de negocio.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>4.3 Servicios tecnológicos e incubación</summary>
+          <div class="subsection">
+            <p><strong>Objetivo:</strong> Acompañar la transformación de residuos en oportunidades industriales concretas.</p>
+            <p><strong>Servicios potenciales</strong></p>
+            <ul>
+              <li>Estudios de factibilidad técnica y económica.</li>
+              <li>Desarrollo y validación de formulaciones.</li>
+              <li>Ensayos de laboratorio.</li>
+              <li>Prototipado.</li>
+              <li>Vinculación con instrumentos de financiamiento.</li>
+              <li>Acompañamiento a emprendimientos circulares.</li>
+            </ul>
+            <p>Este componente permite pasar de la gestión del residuo a la creación de nuevas cadenas de valor.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>4.4 Módulo de trazabilidad y certificación basada en blockchain</summary>
+          <div class="subsection">
+            <p><strong>Objetivo:</strong> Asegurar que las operaciones registradas no puedan ser alteradas posteriormente.</p>
+            <p><strong>Alcance</strong></p>
+            <ul>
+              <li>Confirmación de retiro.</li>
+              <li>Emisión de certificados digitales.</li>
+              <li>Cierres periódicos consolidados (etapa posterior).</li>
+            </ul>
+            <p><strong>Funcionamiento conceptual</strong></p>
+            <ul>
+              <li>La operación se registra en la base de datos tradicional.</li>
+              <li>Se genera una huella criptográfica (hash) de los datos relevantes.</li>
+              <li>El hash se registra en una red blockchain.</li>
+              <li>El identificador de transacción se asocia al certificado digital.</li>
+            </ul>
+            <p><strong>Beneficios</strong></p>
+            <ul>
+              <li>Inmutabilidad de registros.</li>
+              <li>Certificados auditables.</li>
+              <li>Mayor confianza entre actores.</li>
+              <li>Evidencia verificable para reportes ESG.</li>
+            </ul>
+            <p>
+              Blockchain no reemplaza la base de datos operativa; actúa como capa de respaldo y verificación,
+              aplicada a un conjunto acotado de eventos críticos.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="mvp">
+        <h2>5. MVP y Piloto Inicial</h2>
+        <p>
+          El proyecto se implementará inicialmente mediante un piloto territorial acotado, diseñado para validar el modelo
+          operativo, tecnológico y de negocio antes de su escalamiento regional. El piloto tendrá una duración estimada
+          de 12 meses.
+        </p>
+
+        <div class="diagram-system">
+          <h4>Esquema del piloto (MVP &mdash; Año 1)</h4>
+
+          <!-- Fila principal: territorio y actores -->
+          <div class="diagram-row">
+            <div class="diagram-box">
+              <strong>Municipio piloto</strong>
+              <span>Ciudad intermedia (ej. Santa Fe)</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Generadores</strong>
+              <span>20&ndash;30 actores registrados</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Recolectores / cooperativas</strong>
+              <span>5&ndash;8 actores activos</span>
+            </div>
+          </div>
+
+          <!-- Fila de operación y volumen -->
+          <div class="diagram-subrow">
+            <span class="diagram-arrow">⬇</span>
+            <div class="diagram-box">
+              <strong>Plataforma (MVP)</strong>
+              <span>Publicación y toma de lotes, registro de operaciones</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Operaciones registradas</strong>
+              <span>&ge; 200 operaciones en 12 meses</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Volumen trazado</strong>
+              <span>150&ndash;300 t de residuos</span>
+            </div>
+          </div>
+
+          <!-- Fila de certificación y resultados -->
+          <div class="diagram-subrow">
+            <span class="diagram-arrow">⬇</span>
+            <div class="diagram-box">
+              <strong>Certificados digitales</strong>
+              <span>100% de operaciones con certificado</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Blockchain</strong>
+              <span>Hash de operaciones y certificados</span>
+            </div>
+            <span class="diagram-arrow">➜</span>
+            <div class="diagram-box">
+              <strong>Informe técnico</strong>
+              <span>1 oportunidad concreta de valorización identificada</span>
+            </div>
+          </div>
+
+          <p class="diagram-caption">
+            El piloto conecta un municipio, generadores y recolectores a través de la plataforma,
+            registrando y certificando entre 150 y 300 toneladas de residuos en un año. Los datos
+            obtenidos permiten elaborar un informe técnico y detectar al menos una oportunidad
+            concreta de desarrollo industrial basada en residuos.
+          </p>
+        </div>
+
+        <details>
+          <summary>5.1 Objetivo del piloto</summary>
+          <div class="subsection">
+            <p><strong>Validar en condiciones reales:</strong></p>
+            <ul>
+              <li>La vinculación digital entre generadores y recolectores.</li>
+              <li>El registro estructurado de flujos de residuos.</li>
+              <li>La emisión de certificados digitales verificables.</li>
+              <li>La identificación de al menos una oportunidad concreta de valorización industrial.</li>
+            </ul>
+            <p>
+              El piloto permitirá evaluar la viabilidad técnica, operativa, institucional y económica del sistema.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>5.2 Alcance territorial</summary>
+          <div class="subsection">
+            <p>
+              El piloto se implementará en un municipio intermedio (por ejemplo, Santa Fe u otro con características similares),
+              que presente:
+            </p>
+            <ul>
+              <li>Volumen significativo de residuos reciclables.</li>
+              <li>Presencia de cooperativas o recolectores organizados.</li>
+              <li>Interés institucional en mejorar trazabilidad y métricas ambientales.</li>
+            </ul>
+            <p>La selección final del territorio se definirá tras reuniones exploratorias con actores locales.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>5.3 Flujos de residuos prioritarios</summary>
+          <div class="subsection">
+            <p>
+              Durante el piloto se trabajará inicialmente con dos tipos de residuos estratégicos, seleccionados mediante un
+              análisis comparativo basado en:
+            </p>
+            <ul>
+              <li>Volumen disponible.</li>
+              <li>Concentración geográfica.</li>
+              <li>Valor de mercado.</li>
+              <li>Grado de informalidad.</li>
+              <li>Potencial técnico de valorización.</li>
+              <li>Diferencial científico-tecnológico del proyecto.</li>
+            </ul>
+            <p><strong>Hipótesis inicial:</strong></p>
+            <ul>
+              <li>PET post-consumo.</li>
+              <li>Film plástico (PEBD).</li>
+              <li>Scrap plástico industrial.</li>
+            </ul>
+            <p>
+              La selección definitiva se realizará tras el relevamiento preliminar de datos con municipio y actores del territorio.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>5.4 Funcionalidades del MVP</summary>
+          <div class="subsection">
+            <p><strong>Módulo operativo</strong></p>
+            <ul>
+              <li>Registro de generadores.</li>
+              <li>Registro de recolectores/cooperativas.</li>
+              <li>Publicación y toma de lotes.</li>
+              <li>Confirmación de retiro con carga de datos básicos (peso, fecha, evidencia fotográfica).</li>
+            </ul>
+            <p><strong>Certificación digital</strong></p>
+            <ul>
+              <li>Generación automática de certificado de gestión por operación.</li>
+              <li>Identificador único por lote.</li>
+              <li>Acceso digital al certificado por parte del generador y administración.</li>
+            </ul>
+            <p><strong>Trazabilidad basada en blockchain</strong></p>
+            <ul>
+              <li>Registro en blockchain exclusivamente del cierre de operación.</li>
+              <li>Generación y almacenamiento de hash asociado al certificado.</li>
+              <li>Asociación del identificador de transacción blockchain al documento emitido.</li>
+            </ul>
+            <p><strong>Panel básico de métricas</strong></p>
+            <ul>
+              <li>Volumen total gestionado.</li>
+              <li>Número de operaciones.</li>
+              <li>Distribución por tipo de residuo.</li>
+              <li>Actores activos.</li>
+            </ul>
+            <p>
+              En esta fase no se incluirán funcionalidades avanzadas como optimización de rutas, integración con sistemas externos
+              ni analítica predictiva.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>5.5 Metas cuantitativas en 12 meses</summary>
+          <div class="subsection">
+            <p><strong>Metas tentativas para el primer año de operación:</strong></p>
+            <ul>
+              <li>20 a 30 generadores registrados.</li>
+              <li>5 a 8 recolectores/cooperativas activas.</li>
+              <li>Entre 150 y 300 toneladas de residuos trazadas en el año.</li>
+              <li>Al menos 200 operaciones registradas y certificadas digitalmente.</li>
+              <li>100% de operaciones cerradas con certificado digital.</li>
+              <li>100% de certificados con registro hash en blockchain.</li>
+            </ul>
+            <p><strong>Capa de inteligencia tecnológica:</strong></p>
+            <ul>
+              <li>Elaboración de 1 informe técnico de valorización basado en datos reales del piloto.</li>
+              <li>Identificación de al menos 1 oportunidad concreta de desarrollo industrial con factibilidad preliminar.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>5.6 Indicadores de éxito</summary>
+          <div class="subsection">
+            <p>El piloto será considerado exitoso si logra:</p>
+            <ul>
+              <li>Adopción activa por al menos el 70% de los actores registrados.</li>
+              <li>Crecimiento mensual sostenido del volumen gestionado.</li>
+              <li>Emisión de certificados verificables sin incidentes técnicos.</li>
+              <li>Interés institucional en ampliar o replicar el sistema.</li>
+              <li>Inicio de al menos una línea de desarrollo tecnológico derivada de los datos obtenidos.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="flujos">
+        <h2>6. Modelo Económico</h2>
+        <p>
+          El modelo económico del piloto combina ingresos por uso de la plataforma y servicios tecnológicos asociados,
+          con una estructura de costos ajustada a una fase inicial de validación. El objetivo del primer año no es 
+          maximizar rentabilidad, sino validar el modelo y demostrar tracción operativa y técnica.
+        </p>
+
+        <details>
+          <summary>6.1 Fuentes de ingresos estimadas (Año 1)</summary>
+          <div class="subsection">
+            <p><strong>1) Suscripción institucional (municipio)</strong></p>
+            <ul>
+              <li>Esquema de suscripción anual por uso del sistema y acceso a métricas.</li>
+              <li>Hipótesis preliminar: suscripción anual estimada USD 10.000&ndash;15.000 (o equivalente en moneda local).</li>
+              <li>Incluye acceso a panel de métricas, certificación digital, reportes básicos y soporte técnico.</li>
+            </ul>
+            <p><strong>2) Comisión por operación</strong></p>
+            <ul>
+              <li>Comisión baja por tonelada gestionada como mecanismo de sostenibilidad del sistema.</li>
+              <li>Hipótesis: comisión estimada USD 5&ndash;10 por tonelada trazada.</li>
+              <li>Si se gestionan entre 150 y 300 toneladas, el ingreso estimado sería de USD 750&ndash;3.000 anuales.</li>
+              <li>En etapa piloto este ingreso es marginal, pero permite validar el esquema.</li>
+            </ul>
+            <p><strong>3) Servicios tecnológicos</strong></p>
+            <ul>
+              <li>Informe técnico de valorización y estudios preliminares de factibilidad.</li>
+              <li>Hipótesis: 1 estudio técnico en el primer año, valor estimado USD 5.000 &ndash; 8.000.</li>
+              <li>Este componente tiene mayor margen y refleja el diferencial científico-tecnológico del proyecto.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>6.2 Ingresos estimados totales &mdash; Año 1</summary>
+          <div class="subsection">
+            <p><strong>Escenario conservador:</strong></p>
+            <ul>
+              <li>Suscripción municipal: USD 12.000</li>
+              <li>Comisiones por tonelada: USD 1.500</li>
+              <li>1 estudio técnico: USD 6.000</li>
+            </ul>
+            <p><strong>Ingreso total estimado: USD 19.500 anuales (aprox.)</strong></p>
+            <p>Este valor puede variar según negociación institucional y volumen real gestionado.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>6.3 Estructura de costos estimada</summary>
+          <div class="subsection">
+            <p><strong>Costos principales del piloto:</strong></p>
+            <p><strong>Desarrollo tecnológico</strong></p>
+            <ul>
+              <li>Backend y frontend inicial.</li>
+              <li>Integración básica con blockchain.</li>
+              <li>Infraestructura cloud.</li>
+              <li>Estimación preliminar: USD 8.000&ndash;12.000 (desarrollo inicial).</li>
+            </ul>
+            <p><strong>Infraestructura y mantenimiento</strong></p>
+            <ul>
+              <li>Hosting, dominio, soporte técnico.</li>
+              <li>Costos de transacciones blockchain.</li>
+              <li>Estimación anual: USD 2.000&ndash;4.000.</li>
+            </ul>
+            <p><strong>Gestión y operación</strong></p>
+            <ul>
+              <li>Coordinación con actores, reuniones institucionales, administración del sistema.</li>
+              <li>Puede cubrirse inicialmente con dedicación parcial del equipo promotor.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>6.4 Resultado esperado del piloto</summary>
+          <div class="subsection">
+            <p><strong>Escenario conservador:</strong></p>
+            <ul>
+              <li>Ingresos aproximados: USD 19.500.</li>
+              <li>Costos estimados (año 1): USD 12.000&ndash;16.000.</li>
+            </ul>
+            <p><strong>Resultado esperado:</strong> punto de equilibrio o leve superávit.</p>
+            <p>
+              El valor estratégico del piloto no reside únicamente en la rentabilidad inmediata, sino en la validación del modelo,
+              la generación de datos reales, la construcción de credibilidad institucional y la base para escalamiento regional.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>6.5 Escalabilidad</summary>
+          <div class="subsection">
+            <p>
+              Una vez validado el modelo en un municipio, cada nuevo territorio replicado multiplica la suscripción,
+              incrementa el volumen gestionado (y por tanto las comisiones) y amplía la demanda de servicios tecnológicos.
+              La estructura de costos crece más lentamente que los ingresos, mejorando la rentabilidad en fase de expansión.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="modelo">
+        <h2>7. Modelo de Negocio</h2>
+        <p>
+          El modelo de negocio combina una base SaaS (Software as a Service) con servicios tecnológicos especializados
+          y certificación digital, configurando una estructura híbrida que integra ingresos recurrentes y servicios
+          de alto valor agregado.
+        </p>
+
+        <details>
+          <summary>7.1 Ingresos en etapa piloto</summary>
+          <div class="subsection">
+            <p>
+              Durante el primer año, el modelo se apoya en:
+            </p>
+            <ul>
+              <li>Suscripción institucional municipal.</li>
+              <li>Comisión moderada por tonelada gestionada.</li>
+              <li>Servicios técnicos específicos (estudios de valorización).</li>
+            </ul>
+            <p>
+              En esta etapa, el objetivo principal es validar adopción y generar datos estructurados más que maximizar
+              rentabilidad.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>7.2 Modelo consolidado (post-piloto)</summary>
+          <div class="subsection">
+            <p><strong>Una vez validado el sistema, el modelo se consolida en cuatro líneas principales:</strong></p>
+            <ul>
+              <li>
+                <strong>Suscripción SaaS:</strong> municipios, parques industriales, grandes generadores, consorcios de cooperativas.
+                Incluye acceso a plataforma, panel de métricas, certificación digital y reportes ambientales.
+              </li>
+              <li>
+                <strong>Certificación y trazabilidad avanzada:</strong> certificados verificables en blockchain, reportes ESG
+                estructurados y auditorías digitales, ofrecidos como módulo premium.
+              </li>
+              <li>
+                <strong>Servicios tecnológicos de valorización:</strong> estudios de factibilidad, desarrollo de materiales,
+                validación experimental y prototipado, como componente de mayor margen y diferencial competitivo.
+              </li>
+              <li>
+                <strong>Incubación y desarrollo de nuevos negocios:</strong> acompañamiento técnico, participación en emprendimientos
+                derivados y licenciamiento de desarrollos tecnológicos.
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>7.3 Propuesta de valor diferenciada</summary>
+          <div class="subsection">
+            <p>El proyecto no compite como una simple plataforma de intermediación de residuos. Se posiciona como:</p>
+            <ul>
+              <li>Infraestructura digital de trazabilidad.</li>
+              <li>Generador de datos estratégicos.</li>
+              <li>Plataforma de desarrollo industrial circular.</li>
+              <li>Sistema de certificación verificable.</li>
+            </ul>
+            <p>
+              La integración entre tecnología digital y conocimiento científico aplicado constituye su principal
+              ventaja competitiva.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>7.4 Estrategia de crecimiento</summary>
+          <div class="subsection">
+            <p>Escalamiento por:</p>
+            <ul>
+              <li>Replicación municipal.</li>
+              <li>Ampliación de flujos de residuos.</li>
+              <li>Integración con sectores industriales específicos.</li>
+              <li>Expansión regional.</li>
+            </ul>
+            <p>
+              El crecimiento incremental mejora el margen, dado que la infraestructura tecnológica es escalable y reutilizable
+              en múltiples territorios.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="gobernanza">
+        <h2>8. Estrategia Institucional</h2>
+        <p>
+          La estructura institucional y jurídica del proyecto se encuentra en etapa de análisis estratégico, con el objetivo
+          de garantizar flexibilidad operativa en el corto plazo y escalabilidad en el mediano plazo.
+        </p>
+
+        <details>
+          <summary>8.1 Estrategia inicial</summary>
+          <div class="subsection">
+            <p>
+              En la etapa piloto se prioriza una estructura jurídica privada, con objeto social amplio vinculado a:
+            </p>
+            <ul>
+              <li>Desarrollo de software.</li>
+              <li>Servicios de trazabilidad.</li>
+              <li>Consultoría tecnológica.</li>
+              <li>Estudios de valorización.</li>
+              <li>Desarrollo de materiales y procesos.</li>
+              <li>Certificación digital.</li>
+            </ul>
+            <p>
+              Esta estructura permitirá velocidad de implementación, control estratégico del proyecto, flexibilidad para
+              incorporar socios tecnológicos o financieros y compatibilidad futura con mecanismos de vinculación institucional.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>8.2 Articulación institucional</summary>
+          <div class="subsection">
+            <p>El proyecto podrá articular con:</p>
+            <ul>
+              <li>Municipios interesados en mejorar la gestión de residuos y la trazabilidad.</li>
+              <li>Cooperativas y recolectores que operan en el territorio.</li>
+              <li>Instituciones académicas y centros tecnológicos para apoyo técnico específico.</li>
+              <li>Organismos de financiamiento y programas de innovación orientados a economía circular.</li>
+            </ul>
+            <p>
+              Estas articulaciones se formalizarán mediante convenios específicos, contratos de asistencia técnica y
+              acuerdos de colaboración, sin que ello implique necesariamente participación accionaria institucional en
+              la etapa inicial.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>8.3 Propiedad intelectual y activos tecnológicos</summary>
+          <div class="subsection">
+            <p>El proyecto contempla tres tipos de activos:</p>
+            <ul>
+              <li>Plataforma digital y arquitectura tecnológica.</li>
+              <li>Metodologías de análisis y valorización.</li>
+              <li>Conocimiento aplicado en desarrollo de materiales.</li>
+            </ul>
+            <p>
+              Se establecerán mecanismos adecuados de protección según corresponda, incluyendo derechos de autor sobre software,
+              contratos de confidencialidad y eventuales registros de propiedad intelectual.
+            </p>
+            <p>
+              El diseño institucional buscará evitar conflictos entre actividades públicas y privadas, garantizando transparencia
+              y cumplimiento normativo.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>8.4 Escenarios futuros posibles</summary>
+          <div class="subsection">
+            <p>A medida que el proyecto evolucione, se evaluarán distintos escenarios:</p>
+            <ul>
+              <li>Incorporación de inversores privados.</li>
+              <li>Conversión en Empresa de Base Tecnológica (EBT).</li>
+              <li>Ampliación regional mediante franquicias o filiales.</li>
+              <li>Integración con programas públicos de economía circular.</li>
+            </ul>
+            <p>
+              La estructura adoptada deberá permitir transitar entre estos escenarios sin comprometer la estabilidad del proyecto.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>8.5 Principios de gobernanza</summary>
+          <div class="subsection">
+            <p>El proyecto se regirá por:</p>
+            <ul>
+              <li>Transparencia operativa.</li>
+              <li>Trazabilidad de decisiones.</li>
+              <li>Separación clara entre funciones técnicas y administrativas.</li>
+              <li>Enfoque ético en la gestión de datos.</li>
+              <li>Cumplimiento normativo en materia ambiental y tecnológica.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="proximos">
+        <h2>9. Riesgos y Mitigación</h2>
+        <p>
+          La implementación del proyecto presenta riesgos técnicos, operativos, institucionales y de mercado.
+          A continuación, se identifican los principales riesgos y las estrategias previstas para su mitigación.
+        </p>
+
+        <details>
+          <summary>9.1 Riesgos operativos</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: baja adopción por parte de generadores o recolectores</strong></p>
+            <p>
+              Posible dificultad en lograr que actores tradicionales adopten una herramienta digital.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Implementación gradual con actores piloto previamente identificados.</li>
+              <li>Capacitación simple y acompañamiento inicial.</li>
+              <li>Interfaz intuitiva y simplificada.</li>
+              <li>Incentivos asociados a certificación digital y visibilidad.</li>
+            </ul>
+            <p><strong>Riesgo: falta de masa crítica de residuos</strong></p>
+            <p>
+              Volumen insuficiente para generar impacto o justificar valorización industrial.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Selección estratégica de flujos con volumen concentrado.</li>
+              <li>Enfoque inicial en sectores específicos.</li>
+              <li>Escalamiento progresivo por rubro.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>9.2 Riesgos tecnológicos</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: complejidad técnica excesiva en etapa inicial</strong></p>
+            <p>
+              Sobredimensionar el desarrollo tecnológico puede retrasar la implementación.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Alcance limitado del MVP.</li>
+              <li>Uso de infraestructura tecnológica probada.</li>
+              <li>Aplicación de blockchain únicamente en eventos críticos.</li>
+              <li>Desarrollo modular y escalable.</li>
+            </ul>
+            <p><strong>Riesgo: problemas de interoperabilidad futura</strong></p>
+            <p>
+              Dificultad para integrarse con sistemas municipales o empresariales existentes.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Diseño de arquitectura basada en APIs.</li>
+              <li>Uso de estándares abiertos.</li>
+              <li>Documentación técnica clara desde el inicio.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>9.3 Riesgos económicos</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: ingresos insuficientes en etapa piloto</strong></p>
+            <p>
+              El modelo puede no generar rentabilidad inmediata.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Estructura de costos ajustada.</li>
+              <li>Diversificación de fuentes de ingreso (SaaS + servicios tecnológicos).</li>
+              <li>Enfoque en validación más que rentabilidad en año 1.</li>
+            </ul>
+            <p><strong>Riesgo: dependencia excesiva de un solo cliente institucional</strong></p>
+            <p>
+              Dependencia financiera de un único municipio.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Estrategia temprana de replicabilidad.</li>
+              <li>Búsqueda de al menos un segundo cliente dentro de los primeros 18 meses.</li>
+              <li>Desarrollo paralelo de servicios tecnológicos independientes del territorio.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>9.4 Riesgos regulatorios e institucionales</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: cambios normativos en gestión de residuos</strong></p>
+            <p>
+              Modificaciones regulatorias pueden alterar condiciones operativas.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Monitoreo normativo continuo.</li>
+              <li>Diseño flexible del modelo.</li>
+              <li>Posicionamiento como herramienta complementaria, no sustitutiva.</li>
+            </ul>
+            <p><strong>Riesgo: conflictos entre actividad pública y privada</strong></p>
+            <p>
+              En caso de vinculación con instituciones públicas, podrían surgir restricciones o incompatibilidades.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Asesoramiento legal previo.</li>
+              <li>Separación clara de funciones.</li>
+              <li>Transparencia en acuerdos de colaboración.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>9.5 Riesgos reputacionales</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: fallas en certificación o trazabilidad</strong></p>
+            <p>
+              Errores técnicos podrían afectar credibilidad.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Auditorías internas periódicas.</li>
+              <li>Pruebas técnicas antes de implementación.</li>
+              <li>Uso de blockchain como respaldo de integridad.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>9.6 Riesgos estratégicos</summary>
+          <div class="subsection">
+            <p><strong>Riesgo: aparición de competidores con mayor financiamiento</strong></p>
+            <p>
+              Ingreso de actores tecnológicos de mayor escala.
+            </p>
+            <p><strong>Mitigación:</strong></p>
+            <ul>
+              <li>Diferenciación basada en conocimiento científico.</li>
+              <li>Foco territorial.</li>
+              <li>Servicios tecnológicos de alto valor agregado.</li>
+              <li>Construcción temprana de red de actores locales.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="hoja">
+        <h2>10. Hoja de Ruta (3 años)</h2>
+        <p>
+          La evolución del proyecto se plantea en tres etapas principales, con el objetivo de pasar de un piloto
+          municipal a una solución escalable a nivel regional, consolidando tanto la plataforma digital como los
+          servicios tecnológicos asociados.
+        </p>
+
+        <details>
+          <summary>10.1 Año 1 &mdash; Piloto y validación</summary>
+          <div class="subsection">
+            <ul>
+              <li>Implementación del piloto en un municipio intermedio.</li>
+              <li>Registro de 20&ndash;30 generadores y 5&ndash;8 recolectores/cooperativas.</li>
+              <li>Gestión trazada de 150&ndash;300 toneladas de residuos.</li>
+              <li>Emisión de certificados digitales con respaldo en blockchain.</li>
+              <li>Elaboración de 1 informe técnico de valorización con datos reales.</li>
+              <li>Identificación de al menos 1 oportunidad concreta de desarrollo industrial.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>10.2 Año 2 &mdash; Consolidación y primeras réplicas</summary>
+          <div class="subsection">
+            <ul>
+              <li>Optimización de la plataforma a partir de los resultados del piloto.</li>
+              <li>Incorporación de nuevas funcionalidades según demanda (p. ej., reportes avanzados, integración con sistemas municipales).</li>
+              <li>Ampliación a 1&ndash;2 municipios adicionales o clusters territoriales.</li>
+              <li>Incremento del volumen gestionado y del número de actores conectados.</li>
+              <li>Desarrollo de 1&ndash;2 estudios técnicos adicionales de valorización.</li>
+              <li>Inicio de al menos un proyecto de desarrollo industrial basado en residuos identificados.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>10.3 Año 3 &mdash; Escalamiento regional y expansión de servicios</summary>
+          <div class="subsection">
+            <ul>
+              <li>Consolidación del modelo SaaS para municipios y grandes generadores.</li>
+              <li>Escalamiento a un conjunto mayor de territorios (regiones o provincias).</li>
+              <li>Fortalecimiento del portafolio de servicios tecnológicos de valorización.</li>
+              <li>Desarrollo de líneas de negocio derivadas (p. ej., incubación de emprendimientos, licenciamiento de desarrollos).</li>
+              <li>Búsqueda de inversión privada o instrumentos de financiamiento para acelerar la expansión.</li>
+            </ul>
+            <p>
+              Esta hoja de ruta es flexible y se ajustará en función de los aprendizajes del piloto, la respuesta de los actores
+              involucrados y las oportunidades de financiamiento y articulación institucional que se presenten.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <section class="tab-panel" role="tabpanel" data-tab="equipo">
+        <h2>11. Equipo promotor y capacidades</h2>
+        <p>
+          El proyecto es impulsado por un equipo con experiencia combinada en investigación científico-tecnológica, economía
+          circular, desarrollo de materiales y gestión de datos, complementado por capacidades en diseño e implementación de
+          soluciones digitales.
+        </p>
+
+        <details>
+          <summary>11.1 Perfil técnico-científico</summary>
+          <div class="subsection">
+            <p>
+              El núcleo técnico del proyecto está constituido por profesionales con trayectoria en:
+            </p>
+            <ul>
+              <li>Valorización de residuos agroindustriales y urbanos.</li>
+              <li>Desarrollo de materiales compuestos y biomateriales.</li>
+              <li>Evaluación de procesos desde la perspectiva de economía circular.</li>
+              <li>Participación en proyectos de I+D+i con articulación público&ndash;privada.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>11.2 Perfil tecnológico y de datos</summary>
+          <div class="subsection">
+            <p>
+              El desarrollo de la plataforma digital y de los módulos de análisis se apoya en capacidades de:
+            </p>
+            <ul>
+              <li>Diseño e implementación de plataformas web orientadas a datos.</li>
+              <li>Modelado de bases de datos y generación de paneles de indicadores.</li>
+              <li>Integración de tecnologías emergentes (p. ej., blockchain para trazabilidad).</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>11.3 Red de colaboración</summary>
+          <div class="subsection">
+            <p>
+              El proyecto prevé la articulación con:
+            </p>
+            <ul>
+              <li>Municipios interesados en mejorar la gestión de residuos y la trazabilidad.</li>
+              <li>Cooperativas y recolectores que operan en el territorio.</li>
+              <li>Instituciones académicas y centros tecnológicos para apoyo técnico específico.</li>
+              <li>Organismos de financiamiento y programas de innovación orientados a economía circular.</li>
+            </ul>
+            <p>
+              Esta combinación de conocimiento científico, experiencia en terreno y capacidades tecnológicas constituye un
+              factor clave para la implementación efectiva y la posterior expansión del proyecto.
+            </p>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+  <script>
+    const tabs = document.querySelectorAll('.tab-button');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        tabs.forEach(t => {
+          t.classList.toggle('active', t === tab);
+          t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+        });
+        panels.forEach(panel => {
+          panel.classList.toggle('active', panel.dataset.tab === target);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
