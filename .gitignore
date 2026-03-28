@@ -7,3 +7,4 @@ coverage
 .next
 .DS_Store
 .prisma
+uploads

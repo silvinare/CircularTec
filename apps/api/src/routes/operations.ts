@@ -1,5 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '@circulartec/db';
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import multer from 'multer';
 import { z } from 'zod';
 import { requireRole } from '../lib/guard';
 import { HttpError } from '../lib/errors';
@@ -7,6 +11,23 @@ import { addAuditEvent } from '../services/audit-service';
 import { issueCertificateForOperation } from '../services/certificates-service';
 
 const router = Router();
+const uploadsDir = path.resolve(process.cwd(), '../../uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname || '').toLowerCase();
+      cb(null, `${Date.now()}-${crypto.randomUUID()}${ext}`);
+    }
+  }),
+  limits: {
+    fileSize: 8 * 1024 * 1024
+  }
+});
 
 router.get('/by-lot/:lotId', async (req, res, next) => {
   try {
@@ -152,6 +173,33 @@ router.post('/:operationId/evidences', async (req, res, next) => {
         operationId: operation.id,
         fileUrl: input.fileUrl,
         fileType: input.fileType,
+        uploadedBy: user.userId
+      }
+    });
+
+    res.status(201).json(evidence);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/:operationId/evidences/upload', upload.single('file'), async (req, res, next) => {
+  try {
+    requireRole(req, ['OPERADOR_RECOLECTOR', 'ADMIN_MUNICIPIO']);
+    const user = req.user!;
+
+    const operation = await prisma.operation.findUnique({ where: { id: req.params.operationId } });
+    if (!operation) throw new HttpError(404, 'Operacion no encontrada.');
+    if (!req.file) throw new HttpError(400, 'Debes adjuntar un archivo.');
+
+    const fileType = req.file.mimetype.startsWith('image/') ? 'PHOTO' : 'DOCUMENT';
+    const fileUrl = `/uploads/${req.file.filename}`;
+
+    const evidence = await prisma.operationEvidence.create({
+      data: {
+        operationId: operation.id,
+        fileUrl,
+        fileType,
         uploadedBy: user.userId
       }
     });

@@ -50,6 +50,25 @@ main {
   color: var(--muted);
 }
 
+.cards-live .card-wide {
+  grid-column: 1 / -1;
+}
+
+.cards-live .card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kpi-list {
+  margin: 8px 0 0 16px;
+}
+
+.kpi-error {
+  margin: 0;
+  color: #842029;
+}
+
 .verify {
   margin-top: 20px;
   background: var(--panel);
@@ -103,6 +122,25 @@ button {
   height: 42px;
 }
 
+.flow-auth {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 14px;
+  flex-wrap: wrap;
+}
+
+.session-card {
+  background: #f6fbff;
+  border: 1px solid #dbe8f3;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.session-card p {
+  margin: 6px 0 0;
+}
+
 .feedback {
   margin: 10px 0;
   padding: 8px 10px;
@@ -142,6 +180,34 @@ button {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.op-detail {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.op-detail p {
+  margin: 6px 0;
+}
+
+.op-detail ul {
+  margin: 4px 0 0 18px;
+}
+
+.op-detail a {
+  color: #0d4a8a;
+}
+
+.evidence-thumb {
+  display: block;
+  margin-top: 6px;
+  width: 160px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
 }
 
 .codes {

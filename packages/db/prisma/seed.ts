@@ -1,4 +1,5 @@
 import { PrismaClient, UnitType } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -40,15 +41,18 @@ const DEMO = {
 } as const;
 
 async function main() {
+  const demoPasswordHash = await bcrypt.hash('demo1234', 10);
+
   await prisma.user.upsert({
     where: { email: DEMO.users.admin.email },
     update: {
-      fullName: DEMO.users.admin.fullName
+      fullName: DEMO.users.admin.fullName,
+      passwordHash: demoPasswordHash
     },
     create: {
       id: DEMO.users.admin.id,
       email: DEMO.users.admin.email,
-      passwordHash: 'demo-not-used',
+      passwordHash: demoPasswordHash,
       fullName: DEMO.users.admin.fullName
     }
   });
@@ -56,12 +60,13 @@ async function main() {
   await prisma.user.upsert({
     where: { email: DEMO.users.generator.email },
     update: {
-      fullName: DEMO.users.generator.fullName
+      fullName: DEMO.users.generator.fullName,
+      passwordHash: demoPasswordHash
     },
     create: {
       id: DEMO.users.generator.id,
       email: DEMO.users.generator.email,
-      passwordHash: 'demo-not-used',
+      passwordHash: demoPasswordHash,
       fullName: DEMO.users.generator.fullName
     }
   });
@@ -69,12 +74,13 @@ async function main() {
   await prisma.user.upsert({
     where: { email: DEMO.users.collector.email },
     update: {
-      fullName: DEMO.users.collector.fullName
+      fullName: DEMO.users.collector.fullName,
+      passwordHash: demoPasswordHash
     },
     create: {
       id: DEMO.users.collector.id,
       email: DEMO.users.collector.email,
-      passwordHash: 'demo-not-used',
+      passwordHash: demoPasswordHash,
       fullName: DEMO.users.collector.fullName
     }
   });
