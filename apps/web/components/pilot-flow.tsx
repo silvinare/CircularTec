@@ -547,6 +547,15 @@ export function PilotFlow() {
                         <a href={resolveEvidenceUrl(evidence.fileUrl)} target="_blank" rel="noreferrer">
                           Ver evidencia ({evidence.fileType})
                         </a>
+                        {evidence.fileType === 'PHOTO' ? (
+                          <a href={resolveEvidenceUrl(evidence.fileUrl)} target="_blank" rel="noreferrer">
+                            <img
+                              src={resolveEvidenceUrl(evidence.fileUrl)}
+                              alt="Miniatura evidencia"
+                              className="evidence-thumb"
+                            />
+                          </a>
+                        ) : null}
                       </li>
                     ))}
                   </ul>

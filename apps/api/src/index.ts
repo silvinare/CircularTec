@@ -9,6 +9,7 @@ import lotsRoutes from './routes/lots';
 import operationsRoutes from './routes/operations';
 import certificatesRoutes from './routes/certificates';
 import wasteTypesRoutes from './routes/waste-types';
+import dashboardRoutes from './routes/dashboard';
 
 dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
 dotenv.config();
@@ -31,6 +32,7 @@ app.use('/api/v1/lots', lotsRoutes);
 app.use('/api/v1/operations', operationsRoutes);
 app.use('/api/v1/certificates', certificatesRoutes);
 app.use('/api/v1/waste-types', wasteTypesRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof HttpError) {
