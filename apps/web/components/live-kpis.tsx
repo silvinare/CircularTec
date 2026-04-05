@@ -9,15 +9,27 @@ type RoleTokens = {
 };
 
 type DashboardSummary = {
-  operations: number;
-  quantityKg: number;
-  quantityTon: number;
-  activeGenerators: number;
-  activeCollectors: number;
-  byWaste: Array<{
-    wasteType: string;
-    quantityKg: number;
-  }>;
+  period: {
+    publishedLots: number;
+    recoveredKg: number;
+    recoveredTon: number;
+    activeGenerators: number;
+    activeCollectors: number;
+    operationsClosed: number;
+    verifiedCertificates: number;
+    certificationCoveragePct: number;
+    byWaste: Array<{
+      wasteType: string;
+      quantityKg: number;
+    }>;
+  };
+  backlog: {
+    lotsPendingAssignment: number;
+    lotsInProgress: number;
+    operationsPendingConfirmation: number;
+    operationsReadyToClose: number;
+    closedWithoutCertificate: number;
+  };
 };
 
 function apiBase(): string {
@@ -100,26 +112,41 @@ export function LiveKpis() {
   return (
     <section className="cards cards-live">
       <article className="card">
-        <small>Operaciones reales</small>
-        <h3>{summary ? summary.operations : '-'}</h3>
-        <p>Operaciones registradas en el sistema.</p>
+        <small>Lotes publicados</small>
+        <h3>{summary ? summary.period.publishedLots : '-'}</h3>
+        <p>Ingresados en el periodo seleccionado.</p>
       </article>
       <article className="card">
-        <small>Volumen trazado real</small>
-        <h3>{summary ? `${summary.quantityTon} t` : '-'}</h3>
-        <p>{summary ? `${summary.quantityKg} kg acumulados.` : 'Inicia sesion para ver datos.'}</p>
+        <small>Residuos recuperados</small>
+        <h3>{summary ? `${summary.period.recoveredTon} t` : '-'}</h3>
+        <p>{summary ? `${summary.period.recoveredKg} kg recolectados.` : 'Inicia sesion para ver datos.'}</p>
       </article>
       <article className="card">
-        <small>Actores activos (real)</small>
-        <h3>{summary ? `${summary.activeGenerators} / ${summary.activeCollectors}` : '-'}</h3>
-        <p>Generadores / recolectores con actividad.</p>
+        <small>Operaciones cerradas</small>
+        <h3>{summary ? summary.period.operationsClosed : '-'}</h3>
+        <p>Cerradas y listas para sustentar impacto.</p>
+      </article>
+      <article className="card">
+        <small>Certificados verificados</small>
+        <h3>{summary ? summary.period.verifiedCertificates : '-'}</h3>
+        <p>Con trazabilidad digital validada.</p>
+      </article>
+      <article className="card">
+        <small>Cobertura certificada</small>
+        <h3>{summary ? `${summary.period.certificationCoveragePct}%` : '-'}</h3>
+        <p>Operaciones cerradas que ya tienen certificado verificado.</p>
+      </article>
+      <article className="card">
+        <small>Actores activos</small>
+        <h3>{summary ? `${summary.period.activeGenerators} / ${summary.period.activeCollectors}` : '-'}</h3>
+        <p>Generadores / recolectores con retiros en el periodo.</p>
       </article>
 
       <article className="card card-wide">
-        <small>Distribucion por residuo</small>
-        {summary && summary.byWaste.length > 0 ? (
+        <small>Impacto por residuo</small>
+        {summary && summary.period.byWaste.length > 0 ? (
           <ul className="kpi-list">
-            {summary.byWaste.map((item) => (
+            {summary.period.byWaste.map((item) => (
               <li key={item.wasteType}>
                 <strong>{item.wasteType}</strong>: {item.quantityKg} kg
               </li>
@@ -127,6 +154,31 @@ export function LiveKpis() {
           </ul>
         ) : (
           <p>Sin datos por residuo todavia.</p>
+        )}
+      </article>
+
+      <article className="card card-wide">
+        <small>Backlog operativo actual</small>
+        {summary ? (
+          <ul className="kpi-list kpi-list-plain">
+            <li>
+              <strong>{summary.backlog.lotsPendingAssignment}</strong> lotes esperando asignacion
+            </li>
+            <li>
+              <strong>{summary.backlog.lotsInProgress}</strong> lotes en gestion
+            </li>
+            <li>
+              <strong>{summary.backlog.operationsPendingConfirmation}</strong> operaciones pendientes de confirmacion
+            </li>
+            <li>
+              <strong>{summary.backlog.operationsReadyToClose}</strong> operaciones listas para cierre
+            </li>
+            <li>
+              <strong>{summary.backlog.closedWithoutCertificate}</strong> cierres sin certificado verificado
+            </li>
+          </ul>
+        ) : (
+          <p>Inicia sesion para ver el estado actual de la operacion.</p>
         )}
       </article>
 

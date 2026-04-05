@@ -26,8 +26,9 @@ Base path: `/api/v1`
 ## 4. Lotes
 
 - `POST /lots` (generador)
-- `GET /lots` (filtros: `status`, `wasteType`, `organizationId`, `from`, `to`)
+- `GET /lots` (filtros: `status`, `wasteTypeId`, `generatorOrgId`, `collectorOrgId`, `from`, `to`, `page`, `pageSize`)
 - `GET /lots/:id`
+- `GET /lots/:id/traceability`
 - `POST /lots/:id/assign` (recolector)
 - `POST /lots/:id/release` (recolector/admin)
 - `POST /lots/:id/cancel` (generador/admin)
@@ -38,6 +39,7 @@ Base path: `/api/v1`
 - `POST /operations/:lotId/confirm` (generador/admin)
 - `POST /operations/:lotId/close` (admin o regla)
 - `POST /operations/:operationId/evidences` (multipart)
+- `GET /operations/by-lot/:lotId`
 - `GET /operations/:id`
 
 ## 6. Certificados y verificación
@@ -68,7 +70,16 @@ Base path: `/api/v1`
 - `certificate.issued` -> `blockchain.anchor`
 - `blockchain.anchored` -> `certificate.mark_verified`
 
-## 10. Definición de Done (API)
+## 10. Flujo de trazabilidad
+
+- Lote: `PUBLISHED` -> `ASSIGNED` -> `COLLECTED` -> `CLOSED`
+- Operación: `NOT_CREATED` -> `PENDING_CONFIRMATION` -> `CONFIRMED` -> `CLOSED`
+- Certificado: `NOT_CREATED` -> `ISSUED` -> `ANCHORED` -> `VERIFIED`
+- Cada transición válida genera un evento de auditoría con `fromStatus`, `toStatus`, actor y payload contextual.
+- `GET /lots/:id` devuelve el lote completo junto con la sección `traceability`.
+- `GET /lots/:id/traceability` devuelve sólo el snapshot y la línea de tiempo auditada del flujo.
+
+## 11. Definición de Done (API)
 
 - Contratos versionados y documentados (OpenAPI).
 - Tests de integración de flujo principal:

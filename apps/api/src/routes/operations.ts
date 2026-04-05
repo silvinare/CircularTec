@@ -7,8 +7,14 @@ import multer from 'multer';
 import { z } from 'zod';
 import { requireRole } from '../lib/guard';
 import { HttpError } from '../lib/errors';
-import { addAuditEvent } from '../services/audit-service';
 import { issueCertificateForOperation } from '../services/certificates-service';
+import {
+  addEvidenceAuditEvent,
+  closeOperation,
+  collectLot,
+  confirmOperation,
+  ensureOperationReadableByUser
+} from '../services/traceability-service';
 
 const router = Router();
 const uploadsDir = path.resolve(process.cwd(), '../../uploads');
@@ -24,30 +30,120 @@ const upload = multer({
       cb(null, `${Date.now()}-${crypto.randomUUID()}${ext}`);
     }
   }),
+  fileFilter: (_req, file, cb) => {
+    const allowed = file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf';
+    if (!allowed) {
+      cb(new HttpError(400, 'Solo se permiten imagenes o PDFs.') as never);
+      return;
+    }
+
+    cb(null, true);
+  },
   limits: {
     fileSize: 8 * 1024 * 1024
   }
 });
 
-router.get('/by-lot/:lotId', async (req, res, next) => {
-  try {
-    const operation = await prisma.operation.findUnique({
-      where: { lotId: req.params.lotId },
+function buildEvidenceUrl(operationId: string, evidence: { id: string; fileUrl: string }): string {
+  if (evidence.fileUrl.startsWith('/uploads/')) {
+    return `/api/v1/operations/${operationId}/evidences/${evidence.id}/file`;
+  }
+
+  return evidence.fileUrl;
+}
+
+function serializeOperation<T extends { id: string; evidences: Array<{ id: string; fileUrl: string }> }>(operation: T): T {
+  return {
+    ...operation,
+    evidences: operation.evidences.map((evidence) => ({
+      ...evidence,
+      fileUrl: buildEvidenceUrl(operation.id, evidence)
+    }))
+  };
+}
+
+function operationInclude() {
+  return {
+    collector: {
+      select: {
+        id: true,
+        displayName: true,
+        legalName: true,
+        type: true
+      }
+    },
+    lot: {
       include: {
-        evidences: true,
-        certificate: {
+        wasteType: true,
+        generator: {
+          select: {
+            id: true,
+            displayName: true,
+            legalName: true,
+            type: true
+          }
+        },
+        assignments: {
+          orderBy: { assignedAt: 'desc' },
           include: {
-            anchor: true
+            collector: {
+              select: {
+                id: true,
+                displayName: true,
+                legalName: true,
+                type: true
+              }
+            }
           }
         }
       }
+    },
+    evidences: true,
+    certificate: {
+      include: {
+        anchor: true
+      }
+    }
+  } as const;
+}
+
+router.get('/:id', async (req, res, next) => {
+  try {
+    requireRole(req, ['ADMIN_MUNICIPIO', 'OPERADOR_GENERADOR', 'OPERADOR_RECOLECTOR']);
+    const user = req.user!;
+    await ensureOperationReadableByUser(req.params.id, user);
+
+    const operation = await prisma.operation.findUnique({
+      where: { id: req.params.id },
+      include: operationInclude()
     });
 
     if (!operation) {
-      return res.status(404).json({ message: 'Operacion no encontrada para el lote.' });
+      throw new HttpError(404, 'Operacion no encontrada.');
     }
 
-    res.json(operation);
+    res.json(serializeOperation(operation));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/by-lot/:lotId', async (req, res, next) => {
+  try {
+    requireRole(req, ['ADMIN_MUNICIPIO', 'OPERADOR_GENERADOR', 'OPERADOR_RECOLECTOR']);
+    const user = req.user!;
+
+    const operation = await prisma.operation.findUnique({
+      where: { lotId: req.params.lotId },
+      include: operationInclude()
+    });
+
+    if (!operation) {
+      throw new HttpError(404, 'Operacion no encontrada para el lote.');
+    }
+    await ensureOperationReadableByUser(operation.id, user);
+
+    res.json(serializeOperation(operation));
   } catch (error) {
     next(error);
   }
@@ -64,35 +160,12 @@ router.post('/:lotId/collect', async (req, res, next) => {
     const user = req.user!;
     const input = collectSchema.parse(req.body);
 
-    const lot = await prisma.lot.findUnique({ where: { id: req.params.lotId } });
-    if (!lot) throw new HttpError(404, 'Lote no encontrado.');
-    if (lot.status !== 'ASSIGNED') throw new HttpError(409, 'El lote no esta asignado para recoleccion.');
-
-    const operation = await prisma.operation.upsert({
-      where: { lotId: lot.id },
-      update: {
-        collectedQuantityKg: input.collectedQuantityKg,
-        collectedAt: new Date(input.collectedAt),
-        collectorOrgId: user.organizationId,
-        status: 'PENDING_CONFIRMATION'
-      },
-      create: {
-        lotId: lot.id,
-        collectorOrgId: user.organizationId,
-        collectedQuantityKg: input.collectedQuantityKg,
-        collectedAt: new Date(input.collectedAt),
-        status: 'PENDING_CONFIRMATION'
-      }
-    });
-
-    await prisma.lot.update({ where: { id: lot.id }, data: { status: 'COLLECTED' } });
-
-    await addAuditEvent({
-      entityType: 'OPERATION',
-      entityId: operation.id,
-      eventType: 'OPERATION_COLLECTED',
-      payload: { lotId: lot.id, collectedQuantityKg: input.collectedQuantityKg },
-      createdBy: user.userId
+    const operation = await collectLot({
+      lotId: req.params.lotId,
+      collectorOrgId: user.organizationId,
+      collectedQuantityKg: input.collectedQuantityKg,
+      collectedAt: new Date(input.collectedAt),
+      actor: user
     });
 
     res.json(operation);
@@ -101,52 +174,41 @@ router.post('/:lotId/collect', async (req, res, next) => {
   }
 });
 
-const closeSchema = z.object({
+const operationActionSchema = z.object({
   operationId: z.string().uuid()
+});
+
+router.post('/:lotId/confirm', async (req, res, next) => {
+  try {
+    requireRole(req, ['ADMIN_MUNICIPIO', 'OPERADOR_GENERADOR']);
+    const user = req.user!;
+    const { operationId } = operationActionSchema.parse(req.body);
+
+    const confirmed = await confirmOperation({
+      lotId: req.params.lotId,
+      operationId,
+      actor: user
+    });
+
+    res.json({ status: 'ok', operation: confirmed });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/:lotId/close', async (req, res, next) => {
   try {
     requireRole(req, ['ADMIN_MUNICIPIO', 'OPERADOR_GENERADOR']);
     const user = req.user!;
-    const { operationId } = closeSchema.parse(req.body);
+    const { operationId } = operationActionSchema.parse(req.body);
 
-    const operation = await prisma.operation.findUnique({
-      where: { id: operationId },
-      include: { evidences: true }
+    const closed = await closeOperation({
+      lotId: req.params.lotId,
+      operationId,
+      actor: user
     });
 
-    if (!operation || operation.lotId !== req.params.lotId) {
-      throw new HttpError(404, 'Operacion no encontrada para el lote.');
-    }
-    if (operation.evidences.length < 1) {
-      throw new HttpError(422, 'Se requiere al menos una evidencia para cerrar la operacion.');
-    }
-
-    const closed = await prisma.$transaction(async (tx) => {
-      const closedOperation = await tx.operation.update({
-        where: { id: operation.id },
-        data: {
-          status: 'CLOSED',
-          confirmedByGeneratorUserId: user.userId,
-          closedByUserId: user.userId,
-          closedAt: new Date()
-        }
-      });
-
-      await tx.lot.update({ where: { id: req.params.lotId }, data: { status: 'CLOSED' } });
-      return closedOperation;
-    });
-
-    await addAuditEvent({
-      entityType: 'OPERATION',
-      entityId: operation.id,
-      eventType: 'OPERATION_CLOSED',
-      payload: { lotId: req.params.lotId },
-      createdBy: user.userId
-    });
-
-    await issueCertificateForOperation(closed.id);
+    await issueCertificateForOperation(closed.id, user);
 
     res.json({ status: 'ok', operation: closed });
   } catch (error) {
@@ -165,7 +227,7 @@ router.post('/:operationId/evidences', async (req, res, next) => {
     const user = req.user!;
     const input = evidenceSchema.parse(req.body);
 
-    const operation = await prisma.operation.findUnique({ where: { id: req.params.operationId } });
+    const operation = await ensureOperationReadableByUser(req.params.operationId, user);
     if (!operation) throw new HttpError(404, 'Operacion no encontrada.');
 
     const evidence = await prisma.operationEvidence.create({
@@ -177,7 +239,19 @@ router.post('/:operationId/evidences', async (req, res, next) => {
       }
     });
 
-    res.status(201).json(evidence);
+    await addEvidenceAuditEvent({
+      operationId: operation.id,
+      lotId: operation.lotId,
+      evidenceId: evidence.id,
+      fileType: evidence.fileType,
+      fileUrl: evidence.fileUrl,
+      actor: user
+    });
+
+    res.status(201).json({
+      ...evidence,
+      fileUrl: buildEvidenceUrl(operation.id, evidence)
+    });
   } catch (error) {
     next(error);
   }
@@ -188,7 +262,7 @@ router.post('/:operationId/evidences/upload', upload.single('file'), async (req,
     requireRole(req, ['OPERADOR_RECOLECTOR', 'ADMIN_MUNICIPIO']);
     const user = req.user!;
 
-    const operation = await prisma.operation.findUnique({ where: { id: req.params.operationId } });
+    const operation = await ensureOperationReadableByUser(req.params.operationId, user);
     if (!operation) throw new HttpError(404, 'Operacion no encontrada.');
     if (!req.file) throw new HttpError(400, 'Debes adjuntar un archivo.');
 
@@ -204,7 +278,47 @@ router.post('/:operationId/evidences/upload', upload.single('file'), async (req,
       }
     });
 
-    res.status(201).json(evidence);
+    await addEvidenceAuditEvent({
+      operationId: operation.id,
+      lotId: operation.lotId,
+      evidenceId: evidence.id,
+      fileType: evidence.fileType,
+      fileUrl: evidence.fileUrl,
+      actor: user
+    });
+
+    res.status(201).json({
+      ...evidence,
+      fileUrl: buildEvidenceUrl(operation.id, evidence)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/:operationId/evidences/:evidenceId/file', async (req, res, next) => {
+  try {
+    requireRole(req, ['ADMIN_MUNICIPIO', 'OPERADOR_GENERADOR', 'OPERADOR_RECOLECTOR']);
+    const user = req.user!;
+
+    const operation = await ensureOperationReadableByUser(req.params.operationId, user);
+    const evidence = await prisma.operationEvidence.findFirst({
+      where: {
+        id: req.params.evidenceId,
+        operationId: operation.id
+      }
+    });
+
+    if (!evidence) {
+      throw new HttpError(404, 'Evidencia no encontrada.');
+    }
+    if (!evidence.fileUrl.startsWith('/uploads/')) {
+      throw new HttpError(400, 'La evidencia no corresponde a un archivo local.');
+    }
+
+    const filename = path.basename(evidence.fileUrl);
+    const absolutePath = path.resolve(uploadsDir, filename);
+    res.sendFile(absolutePath);
   } catch (error) {
     next(error);
   }

@@ -131,16 +131,34 @@
 
 Transiciones inválidas deben retornar `409 Conflict`.
 
-## 4. Reglas de negocio clave
+## 4. Máquina de estados operativa completa
+
+- Lote: `PUBLISHED` -> `ASSIGNED` -> `COLLECTED` -> `CLOSED`
+- Operación: `NOT_CREATED` -> `PENDING_CONFIRMATION` -> `CONFIRMED` -> `CLOSED`
+- Certificado: `NOT_CREATED` -> `ISSUED` -> `ANCHORED` -> `VERIFIED`
+- Anclaje blockchain: `NOT_CREATED` -> `PENDING` -> `CONFIRMED` o `FAILED`
+
+### Reglas de consistencia entre entidades
+
+- `lots.status = ASSIGNED` implica una asignación activa.
+- `lots.status = COLLECTED` implica `operations.status = PENDING_CONFIRMATION`.
+- `operations.status = CONFIRMED` implica que el generador o admin validó el retiro.
+- `lots.status = CLOSED` implica `operations.status = CLOSED`.
+- `certificates.status = ISSUED | ANCHORED | VERIFIED` sólo existe si `operations.status = CLOSED`.
+- `certificates.status = VERIFIED` implica `blockchain_anchors.status = CONFIRMED`.
+
+## 5. Reglas de negocio clave
 
 - Solo `GENERADOR` puede crear lote.
 - Solo `RECOLECTOR` puede tomar lote `PUBLISHED`.
 - Solo 1 asignación activa por lote.
-- Para cerrar operación se requiere: `collected_quantity_kg`, `collected_at`, al menos 1 evidencia.
+- Para confirmar operación se requiere: lote `COLLECTED` y operación `PENDING_CONFIRMATION`.
+- Para cerrar operación se requiere: operación `CONFIRMED`, `collected_quantity_kg`, `collected_at`, al menos 1 evidencia.
 - Certificado se emite solo cuando `operations.status = CLOSED`.
 - Hash se calcula sobre payload canónico inmutable (orden de campos fijo).
+- Toda transición debe registrar auditoría con `fromStatus`, `toStatus`, actor y payload.
 
-## 5. Índices recomendados
+## 6. Índices recomendados
 
 - `lots(status, created_at desc)`
 - `lots(generator_org_id, created_at desc)`
@@ -149,7 +167,7 @@ Transiciones inválidas deben retornar `409 Conflict`.
 - `audit_events(entity_type, entity_id, created_at desc)`
 - `certificates(public_verification_code)`
 
-## 6. Retención y privacidad
+## 7. Retención y privacidad
 
 - Evidencias: retención mínima 24 meses en piloto.
 - Datos personales mínimos (principio de minimización).

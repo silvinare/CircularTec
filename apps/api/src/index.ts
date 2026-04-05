@@ -10,17 +10,17 @@ import operationsRoutes from './routes/operations';
 import certificatesRoutes from './routes/certificates';
 import wasteTypesRoutes from './routes/waste-types';
 import dashboardRoutes from './routes/dashboard';
+import { getJwtSecret } from './lib/jwt';
 
 dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
 dotenv.config();
+getJwtSecret();
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
-const uploadsDir = path.resolve(process.cwd(), '../../uploads');
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(uploadsDir));
 app.use(authContext);
 
 app.get('/health', (_req, res) => {

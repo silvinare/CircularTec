@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
-import { prisma, AnchorStatus, CertificateStatus, HashAlgorithm } from '@circulartec/db';
-import { addAuditEvent } from './audit-service';
+import { prisma, AnchorStatus, CertificateStatus, Certificate, HashAlgorithm } from '@circulartec/db';
+import { HttpError } from '../lib/errors';
+import { UserContext } from '../types/auth';
+import { addAuditEvent, addStatusTransitionAuditEvent } from './audit-service';
 
 function buildCertificateNumber(): string {
   const random = crypto.randomInt(100000, 999999);
@@ -27,19 +29,27 @@ function canonicalOperationPayload(input: {
   });
 }
 
-export async function issueCertificateForOperation(operationId: string): Promise<void> {
+export async function issueCertificateForOperation(operationId: string, actor?: UserContext): Promise<Certificate> {
   const operation = await prisma.operation.findUnique({ where: { id: operationId } });
-  if (!operation || operation.status !== 'CLOSED' || !operation.closedAt) {
-    return;
+  if (!operation) {
+    throw new HttpError(404, 'Operacion no encontrada.');
+  }
+  if (operation.status !== 'CLOSED') {
+    throw new HttpError(409, 'La operacion debe estar cerrada antes de emitir certificado.');
+  }
+  if (!operation.closedAt) {
+    throw new HttpError(409, 'La operacion cerrada debe tener closedAt para emitir certificado.');
   }
 
-  const certificate = await prisma.certificate.upsert({
-    where: { operationId },
-    update: {
-      status: CertificateStatus.ISSUED,
-      issuedAt: new Date()
-    },
-    create: {
+  const previousCertificate = await prisma.certificate.findUnique({
+    where: { operationId }
+  });
+  if (previousCertificate) {
+    return previousCertificate;
+  }
+
+  const certificate = await prisma.certificate.create({
+    data: {
       operationId,
       certificateNumber: buildCertificateNumber(),
       publicVerificationCode: buildPublicCode(),
@@ -48,10 +58,13 @@ export async function issueCertificateForOperation(operationId: string): Promise
     }
   });
 
-  await addAuditEvent({
+  await addStatusTransitionAuditEvent({
     entityType: 'CERTIFICATE',
     entityId: certificate.id,
     eventType: 'CERTIFICATE_ISSUED',
+    fromStatus: 'NOT_CREATED',
+    toStatus: certificate.status,
+    actor,
     payload: { operationId }
   });
 
@@ -67,6 +80,10 @@ export async function issueCertificateForOperation(operationId: string): Promise
 
   // MVP: anclaje simulado. En produccion se reemplaza por adaptador de red blockchain.
   const txId = `mock_tx_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+
+  const previousAnchor = await prisma.blockchainAnchor.findUnique({
+    where: { certificateId: certificate.id }
+  });
 
   await prisma.blockchainAnchor.upsert({
     where: { certificateId: certificate.id },
@@ -89,13 +106,48 @@ export async function issueCertificateForOperation(operationId: string): Promise
 
   await prisma.certificate.update({
     where: { id: certificate.id },
-    data: { status: CertificateStatus.VERIFIED }
+    data: { status: CertificateStatus.ANCHORED }
+  });
+
+  await addStatusTransitionAuditEvent({
+    entityType: 'CERTIFICATE',
+    entityId: certificate.id,
+    eventType: 'CERTIFICATE_ANCHORED',
+    fromStatus: CertificateStatus.ISSUED,
+    toStatus: CertificateStatus.ANCHORED,
+    actor,
+    payload: { operationId, txId, hash }
   });
 
   await addAuditEvent({
     entityType: 'CERTIFICATE',
     entityId: certificate.id,
     eventType: 'HASH_ANCHORED',
-    payload: { txId, hash }
+    createdBy: actor?.userId,
+    payload: {
+      txId,
+      hash,
+      anchorStatusFrom: previousAnchor?.status ?? 'NOT_CREATED',
+      anchorStatusTo: AnchorStatus.CONFIRMED,
+      actorRole: actor?.role ?? null,
+      actorOrganizationId: actor?.organizationId ?? null
+    }
   });
+
+  await prisma.certificate.update({
+    where: { id: certificate.id },
+    data: { status: CertificateStatus.VERIFIED }
+  });
+
+  await addStatusTransitionAuditEvent({
+    entityType: 'CERTIFICATE',
+    entityId: certificate.id,
+    eventType: 'CERTIFICATE_VERIFIED',
+    fromStatus: CertificateStatus.ANCHORED,
+    toStatus: CertificateStatus.VERIFIED,
+    actor,
+    payload: { operationId, txId }
+  });
+
+  return certificate;
 }

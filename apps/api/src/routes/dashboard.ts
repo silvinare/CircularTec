@@ -18,45 +18,125 @@ router.get('/summary', async (req, res, next) => {
     const from = query.from ? new Date(query.from) : new Date('2000-01-01T00:00:00.000Z');
     const to = query.to ? new Date(query.to) : new Date();
 
-    const whereOperation = {
+    const lotCreatedWhere = {
       createdAt: {
         gte: from,
         lte: to
       }
     };
 
-    const [operationsCount, aggregate, operations] = await Promise.all([
-      prisma.operation.count({ where: whereOperation }),
-      prisma.operation.aggregate({
-        where: whereOperation,
-        _sum: {
-          collectedQuantityKg: true
+    const collectedOperationWhere = {
+      collectedAt: {
+        gte: from,
+        lte: to
+      }
+    };
+
+    const closedOperationWhere = {
+      status: 'CLOSED' as const,
+      closedAt: {
+        gte: from,
+        lte: to
+      }
+    };
+
+    const verifiedCertificateWhere = {
+      status: 'CLOSED' as const,
+      closedAt: {
+        gte: from,
+        lte: to
+      },
+      certificate: {
+        is: {
+          status: 'VERIFIED' as const
         }
-      }),
-      prisma.operation.findMany({
-        where: whereOperation,
-        select: {
-          collectedQuantityKg: true,
-          collectorOrgId: true,
-          lot: {
-            select: {
-              generatorOrgId: true,
-              wasteType: {
-                select: {
-                  name: true
+      }
+    };
+
+    const [publishedLots, collectedAggregate, collectedOperations, closedOperations, verifiedCertificates, backlog] =
+      await Promise.all([
+        prisma.lot.count({ where: lotCreatedWhere }),
+        prisma.operation.aggregate({
+          where: collectedOperationWhere,
+          _sum: {
+            collectedQuantityKg: true
+          }
+        }),
+        prisma.operation.findMany({
+          where: collectedOperationWhere,
+          select: {
+            collectedQuantityKg: true,
+            collectorOrgId: true,
+            lot: {
+              select: {
+                generatorOrgId: true,
+                wasteType: {
+                  select: {
+                    name: true
+                  }
                 }
               }
             }
           }
-        }
-      })
-    ]);
+        }),
+        prisma.operation.count({
+          where: closedOperationWhere
+        }),
+        prisma.operation.count({
+          where: verifiedCertificateWhere
+        }),
+        prisma.$transaction([
+          prisma.lot.count({
+            where: {
+              status: 'PUBLISHED'
+            }
+          }),
+          prisma.lot.count({
+            where: {
+              status: {
+                in: ['ASSIGNED', 'COLLECTED']
+              }
+            }
+          }),
+          prisma.operation.count({
+            where: {
+              status: 'PENDING_CONFIRMATION'
+            }
+          }),
+          prisma.operation.count({
+            where: {
+              status: 'CONFIRMED'
+            }
+          }),
+          prisma.operation.count({
+            where: {
+              status: 'CLOSED',
+              OR: [
+                {
+                  certificate: {
+                    is: null
+                  }
+                },
+                {
+                  certificate: {
+                    is: {
+                      status: {
+                        not: 'VERIFIED'
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          })
+        ])
+      ]);
 
     const byWasteMap = new Map<string, number>();
     const generatorSet = new Set<string>();
     const collectorSet = new Set<string>();
 
-    for (const operation of operations) {
+    for (const operation of collectedOperations) {
       generatorSet.add(operation.lot.generatorOrgId);
       collectorSet.add(operation.collectorOrgId);
 
@@ -72,13 +152,30 @@ router.get('/summary', async (req, res, next) => {
       }))
       .sort((a, b) => b.quantityKg - a.quantityKg);
 
+    const recoveredKg = Number((collectedAggregate._sum.collectedQuantityKg || 0).toFixed(2));
+    const recoveredTon = Number((recoveredKg / 1000).toFixed(2));
+    const certificationCoveragePct =
+      closedOperations > 0 ? Number(((verifiedCertificates / closedOperations) * 100).toFixed(1)) : 0;
+
     res.json({
-      operations: operationsCount,
-      quantityKg: Number((aggregate._sum.collectedQuantityKg || 0).toFixed(2)),
-      quantityTon: Number(((aggregate._sum.collectedQuantityKg || 0) / 1000).toFixed(2)),
-      activeGenerators: generatorSet.size,
-      activeCollectors: collectorSet.size,
-      byWaste,
+      period: {
+        publishedLots,
+        recoveredKg,
+        recoveredTon,
+        activeGenerators: generatorSet.size,
+        activeCollectors: collectorSet.size,
+        operationsClosed: closedOperations,
+        verifiedCertificates,
+        certificationCoveragePct,
+        byWaste
+      },
+      backlog: {
+        lotsPendingAssignment: backlog[0],
+        lotsInProgress: backlog[1],
+        operationsPendingConfirmation: backlog[2],
+        operationsReadyToClose: backlog[3],
+        closedWithoutCertificate: backlog[4]
+      },
       range: {
         from: from.toISOString(),
         to: to.toISOString()

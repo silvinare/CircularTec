@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '@circulartec/db';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { HttpError } from '../lib/errors';
+import { signUserToken } from '../lib/jwt';
 
 const router = Router();
 
@@ -30,6 +30,10 @@ router.post('/login', async (req, res, next) => {
       throw new HttpError(401, 'Credenciales invalidas.');
     }
 
+    if (user.status !== 'ACTIVE') {
+      throw new HttpError(403, 'Usuario inactivo.');
+    }
+
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) {
       throw new HttpError(401, 'Credenciales invalidas.');
@@ -39,6 +43,9 @@ router.post('/login', async (req, res, next) => {
     if (!membership) {
       throw new HttpError(403, 'Usuario sin organizacion activa.');
     }
+    if (membership.organization.status !== 'ACTIVE') {
+      throw new HttpError(403, 'La organizacion del usuario esta inactiva.');
+    }
 
     const payload = {
       userId: user.id,
@@ -47,9 +54,7 @@ router.post('/login', async (req, res, next) => {
       organizationId: membership.organizationId
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'changeme', {
-      expiresIn: '8h'
-    });
+    const token = signUserToken(payload);
 
     res.json({
       token,
@@ -74,7 +79,15 @@ router.get('/me', async (req, res, next) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId }
+      where: { id: req.user.userId },
+      include: {
+        memberships: {
+          where: { organizationId: req.user.organizationId },
+          include: {
+            organization: true
+          }
+        }
+      }
     });
 
     if (!user) {
@@ -86,7 +99,8 @@ router.get('/me', async (req, res, next) => {
       email: user.email,
       fullName: user.fullName,
       role: req.user.role,
-      organizationId: req.user.organizationId
+      organizationId: req.user.organizationId,
+      organization: user.memberships[0]?.organization.displayName || null
     });
   } catch (error) {
     next(error);
